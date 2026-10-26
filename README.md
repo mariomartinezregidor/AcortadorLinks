@@ -68,20 +68,6 @@ Opciones útiles: `-j N` (paralelismo), `-o CARPETA` (destino), `--force`
 python3 -m unittest discover -s tests -v
 ```
 
-## Protección frente a cookies
-
-Los archivos descargados pueden contener cookies de sesión y no deben subirse
-nunca. El repo lo protege en dos capas:
-
-- `.gitignore` ignora `cookies/`, `*cookie*.txt` y las exportaciones típicas de
-  extensiones (`26_PK.txt`, `9_US.txt`, …).
-- `.githooks/pre-commit` bloquea el commit si algún archivo preparado parece un
-  volcado de cookies (formato Netscape o nombres como `NetflixId`, `A3PSID`).
-
-El hook está activado con `git config core.hooksPath .githooks`; si clonas el
-repo en otro equipo, actívalo con ese mismo comando. Para saltarlo de forma
-puntual: `git commit --no-verify`.
-
 ## Notas
 
 - No se imprimen tokens completos: los enlaces se muestran con `redact_url`.
