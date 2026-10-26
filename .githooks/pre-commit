@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Bloquea el commit si algún archivo preparado parece un volcado de cookies.
+#
+# Detecta el formato Netscape (7 campos separados por tabuladores:
+# dominio, flag, ruta, secure, expira, nombre, valor) y los nombres de cookie
+# de sesión más habituales. Para saltarlo de forma puntual: git commit --no-verify
+#
+# Instalación (ya hecha en este repo): git config core.hooksPath .githooks
+
+NOMBRES_SOSPECHOSOS='NetflixId|SecureNetflixId|A3PSID|nfvdid'
+
+es_volcado_netscape() {
+    awk -F'\t' '
+        NF >= 7 && $1 ~ /\./ && ($2 == "TRUE" || $2 == "FALSE") { encontrado = 1 }
+        END { exit encontrado ? 0 : 1 }
+    '
+}
+
+# Código y configuración del propio proyecto: no se les aplica la heurística
+# por nombre (si no, este mismo script se bloquearía a sí mismo).
+es_codigo_del_proyecto() {
+    case "$1" in
+        .gitignore|.gitattributes|.githooks/*|requirements.txt|\
+        *.py|*.md|*.html|*.css|*.js|*.sh|*.toml|*.cfg|*.ini) return 0 ;;
+    esac
+    return 1
+}
+
+sospechosos=()
+while IFS= read -r archivo; do
+    [ -n "$archivo" ] || continue
+    # El contenido preparado, no el del disco.
+    contenido=$(git show ":$archivo" 2>/dev/null) || continue
+
+    # El formato Netscape es una señal fiable: se comprueba en todos los archivos.
+    if printf '%s' "$contenido" | es_volcado_netscape; then
+        sospechosos+=("$archivo (cookies Netscape)")
+        continue
+    fi
+    es_codigo_del_proyecto "$archivo" && continue
+    if printf '%s' "$contenido" | grep -qE "$NOMBRES_SOSPECHOSOS"; then
+        sospechosos+=("$archivo (nombre de cookie de sesión)")
+    fi
+done < <(git diff --cached --name-only --diff-filter=ACM)
+
+if [ ${#sospechosos[@]} -gt 0 ]; then
+    echo "❌ Commit bloqueado: hay archivos que parecen cookies de sesión:"
+    for archivo in "${sospechosos[@]}"; do
+        echo "   - $archivo"
+    done
+    echo
+    echo "Muévelos fuera del repositorio o, si es un falso positivo:"
+    echo "   git commit --no-verify"
+    exit 1
+fi

@@ -11,5 +11,14 @@ downloads/
 # Enlaces personales
 links.txt
 
+# Cookies de sesión y volcados descargados (¡no subir nunca!)
+cookies/
+*.cookie.txt
+*.cookies.txt
+*cookie*.txt
+*cookies*.txt
+# Exportaciones típicas de extensiones: 26_PK.txt, 9_US.txt, ...
+[0-9]*_[A-Z][A-Z].txt
+
 # Sistema
 .DS_Store
