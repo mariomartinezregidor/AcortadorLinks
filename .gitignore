@@ -1,0 +1,15 @@
+# Entornos y cachés de Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Caché de resolución y datos locales
+.resolve_cache.json
+downloads/
+
+# Enlaces personales
+links.txt
+
+# Sistema
+.DS_Store
